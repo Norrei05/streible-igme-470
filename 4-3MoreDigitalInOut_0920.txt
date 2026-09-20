@@ -1,0 +1,44 @@
+// set pin numbers:
+const int buttonPin1 = 3;
+const int buttonPin2 = 2;
+const int redLEDPin1 = 13;
+const int redLEDPin2 = 12;
+
+int buttonState1 = 0;
+int buttonState2 = 0;
+
+void setup() {
+  // initialize the LED pin as an output:
+  pinMode(redLEDPin1, OUTPUT);
+  pinMode(redLEDPin2, OUTPUT);
+  // initialize the pushbutton pin as an input:
+  pinMode(buttonPin1, INPUT);
+  pinMode(buttonPin2, INPUT);
+}
+
+void loop() {
+  // read the state of the pushbutton value:
+  buttonState1 = digitalRead(buttonPin1);
+  buttonState2 = digitalRead(buttonPin2);
+
+  if (buttonState1 == HIGH && buttonState2 == HIGH)
+  {
+    digitalWrite(redLEDPin1, LOW);
+    digitalWrite(redLEDPin2, LOW);
+  }
+  else if (buttonState1 == HIGH && buttonState2 == LOW)
+  {
+    digitalWrite(redLEDPin1, HIGH);
+    digitalWrite(redLEDPin2, HIGH);
+  }
+  else if (buttonState1 == LOW && buttonState2 == HIGH)
+  {
+    digitalWrite(redLEDPin1, HIGH);
+    digitalWrite(redLEDPin2, LOW);
+  }
+  else
+  {
+    digitalWrite(redLEDPin1, LOW);
+    digitalWrite(redLEDPin2, HIGH);
+  }
+}
