@@ -1,0 +1,83 @@
+// pin values for input/output
+const int potentioInPin = A0;
+const int temperatureInPin = A1;
+const int buttonInPin = 2;
+const int redLEDOutPin = 8;
+const int blueLEDOutPin = 9;
+
+// input/output values
+int potentioValue = 0;
+int temperatureValue = 0;
+int buttonState = 0;
+float roomTemperature = 0.0;
+
+// time-based variable for blinking (interval will be potentioValue)
+unsigned long prevTime = 0;
+
+void setup()
+{
+  Serial.begin(9600);
+  roomTemperature = (((analogRead(temperatureInPin) * 5.0) / 1024.0) - 0.5) * 100;
+  
+  pinMode(buttonInPin, INPUT);
+  pinMode(redLEDOutPin, OUTPUT);
+  pinMode(blueLEDOutPin, OUTPUT);
+}
+
+void loop()
+{
+  
+    // read both analog inputs and save to variables
+  potentioValue = analogRead(potentioInPin);
+  temperatureValue = analogRead(temperatureInPin);
+
+    // convert temperature sensor reading to degrees in Celsius
+  float temperatureC = (((temperatureValue * 5.0) / 1024.0) - 0.5) * 100;
+  
+  // read the state of the button
+  buttonState = digitalRead(buttonInPin);
+  
+  // change the room temperature if the button is pressed
+  if (buttonState == HIGH)
+  {
+    roomTemperature = temperatureC;
+  }
+  
+  // print all results to the Serial Monitor for monitoring/testing
+  Serial.print(temperatureC);
+  Serial.print(" degrees C");
+
+  Serial.print("\t sensor = ");
+  Serial.print(potentioValue);
+
+  Serial.print("\t roomTemp = ");
+  Serial.println(roomTemperature);
+  
+  unsigned long currentTime = millis();
+  
+  // controls the frequency of the LED flashing based on potentiometer
+  if (currentTime - prevTime >= potentioValue)
+  {
+      prevTime = currentTime;
+      
+      // change which LED lights up depending on the current temp compared to initial room temp
+      if (temperatureC > (roomTemperature + 0.5))
+      {
+          digitalWrite(redLEDOutPin, HIGH);
+          digitalWrite(blueLEDOutPin, LOW);
+      }
+      else
+      {
+          digitalWrite(blueLEDOutPin, HIGH);
+          digitalWrite(redLEDOutPin, LOW);
+      }
+  }
+  else
+  {
+    	digitalWrite(redLEDOutPin, LOW);
+      digitalWrite(blueLEDOutPin, LOW);
+  }
+
+  // wait 10 milliseconds before the next loop for the analog-to-digital
+  delay(10);
+}
