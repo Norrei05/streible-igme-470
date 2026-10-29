@@ -1,0 +1,76 @@
+#include <Servo.h>
+
+
+// set pin numbers
+const int ledPin = 13;
+const int switchPin = 4;
+const int servoPin = 9;
+int switchState = 0;
+int lastSwitchState = 0;
+int position = 0;
+
+
+Servo servo;
+
+
+// ensure that clasps can only close once (momentary --> maintained)
+bool closedOnce = false;
+
+
+void setup() {  
+  // sets pins as inputs and outputs
+  pinMode(ledPin, OUTPUT);
+  pinMode(switchPin, INPUT);
+
+
+  // sets up servo motor and ensures it stays at 0 to start
+  servo.attach(servoPin);
+  servo.write(0);
+ 
+  digitalWrite(ledPin, LOW);
+}
+
+
+void loop() {
+  switchState = digitalRead(switchPin);
+   
+  // only closes if the button is actually shut
+  if (!closedOnce && switchState == 1)
+  {
+    // rotates the clasp shut
+    for (position = 0; position <= 180; position += 5) {
+      servo.write(position);
+     
+      // waits 15ms for the servo to reach the position
+      delay(15);
+    }
+   
+    closedOnce = true;
+  }
+ 
+  // resets back to original 7 seconds after button is opened
+  // intended to give time for human to open clasps for reset, slower as a result
+  else if (switchState == 0 && closedOnce && position != 0)
+  {
+    // flashes LED to indicate impending closure
+    digitalWrite(ledPin, HIGH);
+    delay(4000);
+    digitalWrite(ledPin, LOW);
+    delay(1500);
+    digitalWrite(ledPin, HIGH);
+    delay(1000);
+    digitalWrite(ledPin, LOW);
+    delay(500);
+   
+    for (position = 180; position >= 0; position -= 1)
+    {
+      servo.write(position);
+
+
+      // waits 15ms for the servo to reach the position
+      delay(15);
+    }
+   
+    closedOnce = false;
+  }
+}
