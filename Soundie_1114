@@ -1,0 +1,87 @@
+#include "Arduino_CapacitiveTouch.h"
+#include "pitches.h"
+
+
+float R = 0;
+int soundPin = D9; //piezo output pin
+int thisBeat = 0; //index into sunshine song arrays
+
+
+// make sure this array and the following one have same number of entries
+// bottom array is time values
+float heartbeats[] = {NOTE_C1, NOTE_DS1, R};
+int beatDuration[] = {4, 2, 4};
+
+
+CapacitiveTouch ct = CapacitiveTouch(A1); //object being touched
+int maxTouch = -1;  //do continuous calibration for sensing range
+int ledPin = D6; //external red LED
+
+
+void setup()
+{
+  Serial.begin(9600);
+  pinMode(ledPin, OUTPUT);
+  ct.begin();
+  ct.setThreshold(125);
+}
+
+
+void loop()
+{
+  // Read the raw value from the capacitive touch sensor.
+  int sensorValue = ct.read();
+  Serial.print("Raw value: ");
+  Serial.println(sensorValue);
+
+
+  // Check if the sensor is touched (raw value exceeds the threshold).
+  if (ct.isTouched())
+  {
+    // "Scream", resets the heartbeat entirely
+    Serial.println("Button touched!");
+   
+    tone(soundPin, NOTE_DS8, 1000);
+    delay(500);
+    thisBeat = 0;
+
+
+    digitalWrite(ledPin, HIGH);
+  }
+  else
+  {
+    playHeartbeat(sensorValue / 2);
+  }
+
+
+  maxTouch = max(sensorValue, maxTouch); //calibration adjustment
+
+
+  delay(100);
+}
+
+
+ // iterate over the notes of the melody
+void playHeartbeat(int frequency) {
+    //ensure that frequency is between a certain range
+    frequency = map(frequency, 0, maxTouch, 1, 10);
+
+
+    float duration = 1000 / beatDuration[thisBeat];
+    tone(soundPin, heartbeats[thisBeat], duration / frequency);
+   
+    if (thisBeat == 1)
+    {
+      digitalWrite(ledPin, HIGH);
+    }
+    else
+    {
+      digitalWrite(ledPin, LOW);
+    }
+
+
+    delay(duration);
+
+
+    thisBeat = ++thisBeat % 3; //prep next note and turn off LED again
+}
